@@ -167,7 +167,7 @@ class LearnerRunner():
             if self.enable_intrinsic_reward:
                 d["rnd_train"] = self.learner.rnd_train_model.get_weights()
                 d["rnd_target"] = self.learner.rnd_target_model.get_weights()
-                self.model_builder.sync_embedding_model(self.learner.emb_train_model, self.learner.emb_model)
+                self.model_builder.sync_embedding_model(self.learner.emb_classifier_model, self.learner.emb_model)
                 d["emb"] = self.learner.emb_model.get_weights()
 
             for q in self.weights_qs:
