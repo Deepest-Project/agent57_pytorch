@@ -1,14 +1,16 @@
-from keras.utils import to_categorical
-import numpy as np
-import tensorflow as tf
+# from keras.utils import to_categorical
 from keras import backend as K
+
+import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
 
 import random
 import os
 import pickle
 
 from .common import create_beta_list, create_gamma_list_agent57, rescaling_inverse, rescaling
-from .model import LstmType, UvfaType
+from .model import LstmType, UvfaType, actval_func_model, embedding_model, embedding_model_classifier, rnd_model
 
 
 class Actor():
@@ -109,27 +111,27 @@ class Actor():
 
     def build_model(self, learner):
         if learner is None:
-            self.actval_ext_model = self.model_builder.build_actval_func_model(None, uvfa=self.uvfa_ext)
+            self.actval_ext_model = actval_func_model(None, uvfa=self.uvfa_ext)
             if self.enable_intrinsic_actval_model:
-                self.actval_int_model =  self.model_builder.build_actval_func_model(None, uvfa=self.uvfa_int)
+                self.actval_int_model =  actval_func_model(None, uvfa=self.uvfa_int)
             if self.enable_intrinsic_reward:
-                self.emb_model = self.model_builder.build_embedding_model()
-                self.rnd_target_model = self.model_builder.build_rnd_model(None)
-                self.rnd_train_model = self.model_builder.build_rnd_model(None)
+                self.emb_model = embedding_model()
+                self.rnd_target_model = rnd_model(None)
+                self.rnd_train_model = rnd_model(None)
 
-        else:
-            self.actval_ext_model = learner.actval_ext_model
-            if self.enable_intrinsic_actval_model:
-                self.actval_int_model = learner.actval_int_model
-            if self.enable_intrinsic_reward:
-                self.emb_model = learner.emb_model
-                self.rnd_target_model = learner.rnd_target_model
-                self.rnd_train_model = learner.rnd_train_model
+        # else:
+        #     self.actval_ext_model = learner.actval_ext_model
+        #     if self.enable_intrinsic_actval_model:
+        #         self.actval_int_model = learner.actval_int_model
+        #     if self.enable_intrinsic_reward:
+        #         self.emb_model = learner.emb_model
+        #         self.rnd_target_model = learner.rnd_target_model
+        #         self.rnd_train_model = learner.rnd_train_model
 
-        if self.lstm_type == LstmType.STATEFUL:
-            self.lstm = self.actval_ext_model.get_layer("lstm")
-            if self.enable_intrinsic_actval_model:
-                self.lstm_int = self.actval_int_model.get_layer("lstm")
+        # if self.lstm_type == LstmType.STATEFUL:
+        #     self.lstm = self.actval_ext_model.get_layer("lstm")
+        #     if self.enable_intrinsic_actval_model:
+        #         self.lstm_int = self.actval_int_model.get_layer("lstm")
 
     
     def load_weights(self, filepath):
